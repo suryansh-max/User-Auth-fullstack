@@ -82,7 +82,16 @@ const  logOutUser = expressAsyncHandler( async(req , res) =>{
  */
 const  userProfile = expressAsyncHandler( async(req , res) =>{
     
-    res.status(200).json({message : 'userprofile user'});
+    const user = {
+        id : req.user._id,
+        name : req.user.name,
+        email : req.user.email,
+    }
+
+    res.status(200).json({
+        message : 'User Fetched Success',
+        userData : user,
+    });
 })
 
 /**
@@ -90,10 +99,38 @@ const  userProfile = expressAsyncHandler( async(req , res) =>{
  * @route put /api/users/profile
  * @access private
  */
-const  updateUser = expressAsyncHandler( async(req , res) =>{
-    
-    res.status(200).json({message : 'updated user'});
-})
+const updateUser = expressAsyncHandler(async (req, res) => {
+    try {
+        let user = await User.findById(req.user._id);
+
+        if (user) {
+            user.name = req.body.name || user.name;
+            user.email = req.body.email || user.email;
+
+            if (req.body.password) {
+                user.password = await hashPassword(req.body.password);
+            }
+
+            const updatedUser = await user.save();
+
+            res.status(200).json({
+                id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+            });
+        } else {
+            res.status(404);
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        } else {
+            console.error("Error occurred after response was sent:", error);
+        }
+    }
+});
+
 
 /**
  * 

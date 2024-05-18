@@ -5,12 +5,16 @@ import connectDb from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 const port = process.env.PORT || 5001;
 import { handleError, notFound } from './middleware/errorhandling.js';
+import cookieParser from 'cookie-parser';
 
 connectDb();
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
+
+app.use(cookieParser()); 
+
 app.use('/api/users',userRoutes);
 app.get('/' , (req , res) => res.send("express server ready"));
 
